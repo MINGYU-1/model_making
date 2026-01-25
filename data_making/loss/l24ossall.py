@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+history = {'alpha': 0.45625233844770874, 'beta': 0.008741819437673534, 'gamma': 7.904571367621319, 'surr': 0.18187154919450677}
 def integrated_loss_fn(mask_logits, recon_numeric, target_x, mu, logvar, pred_conversion, target_conversion, 
                        alpha=1.0,beta=1.0, gamma=1.0, w_surr=0.5):
     """
@@ -31,7 +32,7 @@ def integrated_loss_fn(mask_logits, recon_numeric, target_x, mu, logvar, pred_co
 
     # 최종 손실 합산 (가중치 조절)
     # 각 loss를 batch_size로 나누어 평균 손실을 구함
-    total_loss = (alpha* bce_loss + beta * mse_loss + gamma * kl_loss + w_surr * surr_loss) / batch_size
+    total_loss = (history['alpha']* bce_loss + history['beta'] * mse_loss + history['gamma'] * kl_loss + history['surr'] * surr_loss) / batch_size
 
     return {
         'loss': total_loss,
