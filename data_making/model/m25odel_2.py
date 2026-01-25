@@ -95,4 +95,4 @@ class MultiDecoderCondVAE(nn.Module):
 
         bce_logit, prob_mask, binary_out, x_hat, c_hat = self.decode(
             z, c_rep, threshold=threshold)
-        return x_hat, prob_mask, binary_out, c_hat
+        return x_hat
