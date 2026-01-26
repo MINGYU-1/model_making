@@ -17,7 +17,7 @@ class MultiDecoderCondVAE(nn.Module):
             nn.Linear(x_dim+c_dim,h2),
             nn.ReLU(),
             nn.Linear(h2,h1),
-            nn.ReLU()
+            # nn.ReLU()
         )
         self.mu_head = nn.Linear(h1,z_dim)
         self.logvar_head = nn.Linear(h1,z_dim)
