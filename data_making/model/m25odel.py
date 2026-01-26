@@ -4,14 +4,13 @@ import torch.nn.functional as F
 
 
 class MultiDecoderCondVAE(nn.Module):
-    def __init__(self,x_dim,c_dim,z_dim,z1_dim, h1=32, h2=64): #z1_dim은 다른 encoder에서 넣은값
+    def __init__(self,x_dim,c_dim,z_dim, h1=32, h2=64): #z1_dim은 다른 encoder에서 넣은값
         
         #z1은 surrogate만들떄 사용
         super().__init__()
         self.x_dim = x_dim
         self.c_dim = c_dim
         self.z_dim = z_dim
-        self.z1_dim = z1_dim
         
         ## encoder[x,c] 내에서 데이터를 넣는 방법
         self.encoder = nn.Sequential(
@@ -33,17 +32,19 @@ class MultiDecoderCondVAE(nn.Module):
         )
         ## decoder_mse[z+c]->recon(x_dim)
         self.decoder_mse = nn.Sequential(
-            nn.Linear(z_dim+c_dim,128),
+            nn.Linear(z_dim+c_dim,h1),
             nn.ReLU(),
-            nn.Linear(128,x_dim)
+            nn.Linear(h1,h2),
+            nn.ReLU(),
+            nn.Linear(h2,x_dim)
         )
         # 입력: z_dim + c_dim (촉매 정보와 반응 조건을 모두 고려)
         self.surrogate_head = nn.Sequential(
-            nn.Linear(z_dim + c_dim, 64),
+            nn.Linear(z_dim + c_dim, h2),
             nn.ReLU(),
-            nn.Linear(64, 32),
+            nn.Linear(h2, h1),
             nn.ReLU(),
-            nn.Linear(32, 9) # 결과값: CH4 Conversion % 수치 하나
+            nn.Linear(h1, c_dim) # 결과값: CH4 Conversion % 수치 하나
         )
     
     def reparameterize(self,mu,log_var):

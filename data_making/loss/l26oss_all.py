@@ -1,15 +1,7 @@
 import torch
 import torch.nn.functional as F
-def integrated_loss_fn(binary_logit, x_hat, x, mu, logvar, c_hat, c, 
-                       alpha=1.0,beta=1.0, gamma=1.0, w_surr=0.5):
-    """
-    Args:
-        binary_logit: Decoder BCE의 출력 (Probability 예측용)
-        x_hat: Decoder MSE의 출력 (Active Metal Feature 예측용)
-        x: 실제 Active Metal 데이터
-        mu, logvar: Latent space의 파라미터
-        w_surr: Surrogate loss의 가중치 (보통 회귀 성능을 높이기 위해 크게 잡음)
-    """
+def integrated_loss_fn(binary_logit, x_hat, x, mu, logvar, alpha=1.0,beta=1.0, gamma=1.0):
+    
     batch_size = x.shape[0]
 
     # 1. Classification Loss (BCE): 금속 존재 여부 (이미지의 probability 부분)
@@ -23,18 +15,14 @@ def integrated_loss_fn(binary_logit, x_hat, x, mu, logvar, c_hat, c,
     # 3. KL Divergence: Latent Space 정규화
     kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-    # 4. Surrogate Loss (MSE): CH4 Conversion 예측 성능
-    # 이미지의 가장 우측 하단 예측값에 대한 Loss
-    surr_loss = F.mse_loss(c_hat, c, reduction='sum')
 
     # 최종 손실 합산 (가중치 조절)
     # 각 loss를 batch_size로 나누어 평균 손실을 구함
-    total_loss = (alpha* mse_loss + beta * bce_loss + gamma * kl_loss + w_surr * surr_loss) / batch_size
+    total_loss = (alpha* mse_loss + beta * bce_loss + gamma * kl_loss) / batch_size
 
     return {
         'loss': total_loss,
         'bce_loss': bce_loss / batch_size,
         'mse_loss': mse_loss / batch_size,
         'kl_loss': kl_loss / batch_size,
-        'surr_loss': surr_loss / batch_size
     }

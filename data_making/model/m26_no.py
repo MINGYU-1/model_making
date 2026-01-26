@@ -38,19 +38,13 @@ class MultiDecoderCondVAE(nn.Module):
             nn.ReLU(),
             nn.Linear(h2,x_dim)
         )
-        # 입력: z_dim + c_dim (촉매 정보와 반응 조건을 모두 고려)
-        self.surrogate_head = nn.Sequential(
-            nn.Linear(z_dim + c_dim, h2),
-            nn.ReLU(),
-            nn.Linear(h2, h1),
-            nn.ReLU(),
-            nn.Linear(h1, c_dim)         )
-    
+
     def reparameterize(self,mu,log_var):
         std = torch.exp(0.5*log_var)
         eps = torch.randn_like(std)
         return mu +std*eps
     
+ 
     def forward(self,x,c):
 
         ### 관련해서 z_mu,z_logvar을 활용해서 값을 구하기
@@ -64,35 +58,8 @@ class MultiDecoderCondVAE(nn.Module):
         ## mask_out을 구할때의 방식에 대해 이렇게 구한 값이 0보다 크면 
         binary_out = (prob_mask>0.5).float() ## 결정적 이진 출력
         x_hat = self.decoder_mse(torch.concat([z,c],dim = 1))
-        x_hat *=binary_out
+        x_hat 
         ## c_에 대한 예측
-        surrogate_input = torch.cat([z, c], dim=1)
-        c_hat= self.surrogate_head(surrogate_input)
 
-        return bce_logit ,binary_out, x_hat, z_mu,z_logvar, c_hat
-    
-    def decode(self, z, c, threshold=0.5):
-        dec_in = torch.cat([z, c], dim=1)
 
-        bce_logit = self.decoder_bce(dec_in)
-        prob_mask = torch.sigmoid(bce_logit)
-        binary_out = (prob_mask > threshold).float()
-        
-        x_hat = self.decoder_mse(dec_in)
-        x_hat *= binary_out
-
-        c_hat = self.surrogate_head(torch.cat([z, c], dim=1))
-        return bce_logit, prob_mask, binary_out, x_hat, c_hat
-    
-
-   
-    @torch.no_grad()
-    def generate(self, c, n_samples=1, threshold=0.5):
-   
-        B = c.size(0)
-        z = torch.randn(B * n_samples, self.z_dim, device=c.device)
-        c_rep = c.repeat_interleave(n_samples, dim=0)
-
-        bce_logit, prob_mask, binary_out, x_hat, c_hat = self.decode(
-            z, c_rep, threshold=threshold)
-        return x_hat, prob_mask, binary_out, c_hat
+        return bce_logit ,binary_out, x_hat, z_mu,z_logvar
