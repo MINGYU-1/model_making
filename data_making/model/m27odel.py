@@ -63,17 +63,17 @@ class MultiDecoderCondVAE(nn.Module):
             nn.Linear(h2,x_dim)
         )
 
-        ## decoder2_mse[x2+z2]->recon(x2_dim)
+        ## decoder2_mse[z2+z]->recon(x2_dim)
         self.decoder2_mse = nn.Sequential(
-            nn.Linear(x2_dim+z2_dim,h1),
+            nn.Linear(z2_dim+z_dim,h1),
             nn.ReLU(),
             nn.Linear(h1,h2),
             nn.ReLU(),
             nn.Linear(h2,x2_dim)
         )
-        ## decoder3_mse[x3+z3]->recon(x3_dim)
+        ## decoder3_mse[z2+z3]->recon(x3_dim)
         self.decoder3_mse = nn.Sequential(
-            nn.Linear(x3_dim+z3_dim,h1),
+            nn.Linear(z2_dim+z3_dim,h1),
             nn.ReLU(),
             nn.Linear(h1,h2),
             nn.ReLU(),
@@ -97,7 +97,7 @@ class MultiDecoderCondVAE(nn.Module):
         eps3 = torch.randn_like(std3)
         return mu3 +std3*eps3
  
-    def forward(self,x,x2,x3,c,z,z2):
+    def forward(self,x,x2,x3,c):
 
         ### 관련해서 z_mu,z_logvar을 활용해서 값을 구하기
         h = self.encoder(torch.cat([x,c],dim = 1))
@@ -117,14 +117,14 @@ class MultiDecoderCondVAE(nn.Module):
         h = self.encoder2(torch.cat([x2,z],dim = 1))
         z2_mu = self.mu2_head(h)
         z2_logvar = self.logvar2_head(h)
-        z2 = self.reparameterize(z2_mu,z2_logvar)
-        x2_hat = self.decoder2_mse(torch.concat([z2,x2],dim = 1))
+        z2 = self.reparameterize2(z2_mu,z2_logvar)
+        x2_hat = self.decoder2_mse(torch.concat([z2,z],dim = 1))
 
         # [x3,z2]->mu
-        h = self.encoder2(torch.cat([x3,z2],dim = 1))
+        h = self.encoder3(torch.cat([x3,z2],dim = 1))
         z3_mu = self.mu3_head(h)
         z3_logvar = self.logvar3_head(h)
-        z3 = self.reparameterize(z3_mu,z3_logvar)
-        x3_hat = self.decoder2_mse(torch.concat([z3,x2],dim = 1))
+        z3 = self.reparameterize3(z3_mu,z3_logvar)
+        x3_hat = self.decoder3_mse(torch.concat([z3,z2],dim = 1))
 
-        return bce_logit ,binary_out, x_hat,x2_hat,x3_hat, z_mu,z_logvar
+        return bce_logit ,binary_out, x_hat,x2_hat,x3_hat, z_mu,z_logvar,z2_mu,z2_logvar,z3_mu,z3_logvar

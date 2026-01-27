@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 #x,x2,x3은 그냥 입력값
-def integrated_loss_fn(binary_logit, x_hat,x2_hat,x3_hat x,x2,x3, mu, logvar,mu2,logvar2,mu3,logvar3, a=1.0,b=1.0, c=1.0,d =1.0,e=1.0,f=1.0,g=1.0):
+def integrated_loss_fn(binary_logit, x_hat,x2_hat,x3_hat, x,x2,x3, mu, logvar,mu2,logvar2,mu3,logvar3, a=1.0,b=1.0, c=1.0,d =1.0,e=1.0,f=1.0,g=1.0):
     
     batch_size = x.shape[0]
 
@@ -29,5 +29,9 @@ def integrated_loss_fn(binary_logit, x_hat,x2_hat,x3_hat x,x2,x3, mu, logvar,mu2
         'loss': total_loss,
         'bce_loss': bce_loss / batch_size,
         'mse_loss': mse_loss / batch_size,
+        'mse2_loss':mse2_loss/batch_size,
+        'mse3_loss':mse3_loss/batch_size,
         'kl_loss': kl_loss / batch_size,
+        'kl2_loss':kl2_loss/batch_size,
+        'kl3_loss':kl3_loss/batch_size
     }
