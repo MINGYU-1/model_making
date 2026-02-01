@@ -43,7 +43,10 @@ class MultiDecoderCondVAE(nn.Module):
         std = torch.exp(0.5*log_var)
         eps = torch.randn_like(std)
         return mu +std*eps
-    
+    # def encoder(self,x,c):
+    #     h = self.encoder(torch.cat([x,c]),dim = 1)
+    #     mu = self.mu_head(h)
+    #     return mu
  
     def forward(self,x,c):
 
