@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-def integrated_loss_fn(x_hat, x, mu, logvar, 
+def loss_mse(x_hat, x, mu, logvar, 
                        alpha=1.0,gamma=1.0):
 
 

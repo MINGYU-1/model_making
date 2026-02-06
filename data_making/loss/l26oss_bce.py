@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-def integrated_loss_fn(binary_logit,x, mu, logvar,beta=1.0, gamma=1.0,pos_weight=None):
+def loss_bce(binary_logit,x, mu, logvar,beta=1.0, gamma=1.0,pos_weight=None):
 
 
     # 1. Classification Loss (BCE): 금속 존재 여부 (이미지의 probability 부분)

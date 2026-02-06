@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class MultiDecoderCondVAE(nn.Module):
+class Modelbce(nn.Module):
     def __init__(self,x_dim,c_dim,z_dim, h1=32, h2=64): #z1_dim은 다른 encoder에서 넣은값
         
         #z1은 surrogate만들떄 사용
@@ -43,8 +43,7 @@ class MultiDecoderCondVAE(nn.Module):
         z = self.reparameterize(z_mu, z_logvar)
 
         bce_logit = self.decoder_bce(torch.concat([z, c], dim=1))
-        prob_mask = torch.sigmoid(bce_logit)
-        binary_out = (prob_mask > 0.5).float()
 
-        return bce_logit, prob_mask, binary_out, z_mu, z_logvar
+
+        return bce_logit, z_mu, z_logvar
     
